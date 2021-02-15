@@ -9,8 +9,7 @@ if AsyncIOScheduler:
     class Scheduler(AsyncIOScheduler):
         pass
 else:
-    Scheduler = None
-
+    Scheduler = None  #type: ignore
 
 __all__ = [
     'Scheduler',

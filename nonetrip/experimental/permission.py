@@ -6,12 +6,14 @@ be easier or harder to use than the standard one.
 
 import asyncio
 from datetime import datetime, time
-from typing import Any, Awaitable, Callable, Container, Dict, Iterable, NamedTuple, Optional, Union, List
+from typing import (Any, Awaitable, Callable, Container, Dict, Iterable, List,
+                    NamedTuple, Optional, Union)
 
 from aiocache.decorators import cached
-from aiocqhttp.event import Event as CQEvent
-from nonebot import NoneBot
-from nonebot.exceptions import CQHttpError
+
+from nonetrip import NoneBot
+from nonetrip.compat import CQHttpError
+from nonetrip.compat import Event as CQEvent
 
 
 class SenderRoles(NamedTuple):
@@ -92,16 +94,13 @@ class SenderRoles(NamedTuple):
 
 # AS OF this commit: same as original _get_member_info()
 @cached(ttl=2 * 60)
-async def _get_member_info(bot: NoneBot,
-                           self_id: int,
-                           group_id: int,
+async def _get_member_info(bot: NoneBot, self_id: int, group_id: int,
                            user_id: int) -> Optional[Dict[str, Any]]:
     try:
-        return await bot.get_group_member_info(
-                    self_id=self_id,
-                    group_id=group_id,
-                    user_id=user_id,
-                    no_cache=True)
+        return await bot.get_group_member_info(self_id=self_id,
+                                               group_id=group_id,
+                                               user_id=user_id,
+                                               no_cache=True)
     except CQHttpError:
         return None
 
@@ -128,14 +127,13 @@ async def check_permission(bot: NoneBot, event: CQEvent,
 # booleans to determine whether to proceed with the commands. Here we give
 # its definition, and some example implementations.
 
-
 RoleCheckPolicy = Callable[[SenderRoles], Union[bool, Awaitable[bool]]]
 
 
 def aggregate_policy(
-    policies: Iterable[RoleCheckPolicy],
-    aggregator: Callable[[Iterable[object]], bool] = all
-) -> RoleCheckPolicy:
+        policies: Iterable[RoleCheckPolicy],
+        aggregator: Callable[[Iterable[object]],
+                             bool] = all) -> RoleCheckPolicy:
     """
     Merge several role checkers into one using the AND operator (if `aggregator`
     is builtin function `all` - by default). if all given policies are sync,
@@ -159,8 +157,8 @@ def aggregate_policy(
     syncs = []  # type: List[Callable[[SenderRoles], bool]]
     asyncs = []  # type: List[Callable[[SenderRoles], Awaitable[bool]]]
     for f in policies:
-        if asyncio.iscoroutinefunction(f) or (
-            asyncio.iscoroutinefunction(f.__call__)):
+        if asyncio.iscoroutinefunction(f) or (asyncio.iscoroutinefunction(
+                f.__call__)):
             # pyright cannot narrow down types
             asyncs.append(f)  # type: ignore
         else:
@@ -182,7 +180,8 @@ def aggregate_policy(
     return checker_async
 
 
-def simple_allow_list(*, user_ids: Container[int] = ...,
+def simple_allow_list(*,
+                      user_ids: Container[int] = ...,
                       group_ids: Container[int] = ...,
                       reverse: bool = False) -> RoleCheckPolicy:
     """
@@ -207,7 +206,8 @@ def simple_allow_list(*, user_ids: Container[int] = ...,
     return checker
 
 
-def simple_time_range(begin_time: time, end_time: time,
+def simple_time_range(begin_time: time,
+                      end_time: time,
                       reverse: bool = False,
                       tz_info: Any = None) -> RoleCheckPolicy:
     """
@@ -222,6 +222,7 @@ def simple_time_range(begin_time: time, end_time: time,
     :param tz_info: argument to pass to datetime.now()
     :return: new policy
     """
+
     # source: https://stackoverflow.com/questions/10048249/how-do-i-determine-if-current-time-is-within-a-specified-range-using-pythons-da
     def checker(_: Any) -> bool:
         now = datetime.now(tz_info).time()
@@ -235,10 +236,6 @@ def simple_time_range(begin_time: time, end_time: time,
 
 
 __all__ = [
-    'SenderRoles',
-    'check_permission',
-    'RoleCheckPolicy',
-    'aggregate_policy',
-    'simple_allow_list',
-    'simple_time_range'
+    'SenderRoles', 'check_permission', 'RoleCheckPolicy', 'aggregate_policy',
+    'simple_allow_list', 'simple_time_range'
 ]

@@ -1,9 +1,8 @@
 import asyncio
 import logging
-from typing import Any, Optional, Callable, Awaitable
+from typing import Any, Awaitable, Callable, Optional
 
-import aiocqhttp
-from aiocqhttp import CQHttp
+from nonetrip.compat import CQHttp, Event, Message
 
 from .log import logger
 from .sched import Scheduler
@@ -26,7 +25,7 @@ class NoneBot(CQHttp):
             if k.isupper() and not k.startswith('_')
         }
         logger.debug(f'Loaded configurations: {config_dict}')
-        super().__init__(message_class=aiocqhttp.message.Message,
+        super().__init__(message_class=Message,
                          **{k.lower(): v for k, v in config_dict.items()})
 
         self.config = config_object
@@ -36,29 +35,16 @@ class NoneBot(CQHttp):
         from .notice_request import handle_notice_or_request
 
         @self.on_message
-        async def _(event: aiocqhttp.Event):
+        async def _(event: Event):
             asyncio.create_task(handle_message(self, event))
 
         @self.on_notice
-        async def _(event: aiocqhttp.Event):
+        async def _(event: Event):
             asyncio.create_task(handle_notice_or_request(self, event))
 
         @self.on_request
-        async def _(event: aiocqhttp.Event):
+        async def _(event: Event):
             asyncio.create_task(handle_notice_or_request(self, event))
-
-    def run(self,
-            host: Optional[str] = None,
-            port: Optional[int] = None,
-            *args,
-            **kwargs) -> None:
-        host = host or self.config.HOST
-        port = port or self.config.PORT
-
-        kwargs.setdefault('debug', self.config.DEBUG)
-
-        logger.info(f'Running on {host}:{port}')
-        super().run(host=host, port=port, *args, **kwargs)
 
 
 _bot: Optional[NoneBot] = None
@@ -108,12 +94,7 @@ def get_bot() -> NoneBot:
     return _bot
 
 
-def run(host: Optional[str] = None,
-        port: Optional[int] = None,
-        *args,
-        **kwargs) -> None:
-    """Run the NoneBot instance."""
-    get_bot().run(host=host, port=port, *args, **kwargs)
+
 
 
 def on_startup(func: Callable[[], Awaitable[None]]) \
@@ -124,32 +105,31 @@ def on_startup(func: Callable[[], Awaitable[None]]) \
     return get_bot().server_app.before_serving(func)
 
 
-def on_websocket_connect(func: Callable[[aiocqhttp.Event], Awaitable[None]]) \
+def on_websocket_connect(func: Callable[[Event], Awaitable[None]]) \
         -> Callable[[], Awaitable[None]]:
     """
     Decorator to register a function as websocket connect callback.
 
     Only work with CQHTTP v4.14+.
     """
-    return get_bot().on_meta_event('lifecycle.connect')(func)
+    return get_bot().on_meta_event('lifecycle.connect')(func)  # type: ignore
 
 
+from .command import CommandGroup, CommandSession
 from .exceptions import CQHttpError
-from .command import CommandSession, CommandGroup
-from .plugin import (on_command, on_natural_language, on_notice, on_request,
-                     load_plugin, load_plugins, load_builtin_plugins,
-                     get_loaded_plugins)
-from .message import message_preprocessor, Message, MessageSegment
-from .natural_language import NLPSession, NLPResult, IntentCommand
-from .notice_request import NoticeSession, RequestSession
 from .helpers import context_id
+from .message import Message, MessageSegment, message_preprocessor  # noqa:F811
+from .natural_language import IntentCommand, NLPResult, NLPSession
+from .notice_request import NoticeSession, RequestSession
+from .plugin import (get_loaded_plugins, load_builtin_plugins, load_plugin,
+                     load_plugins, on_command, on_natural_language, on_notice,
+                     on_request)
 
 __all__ = [
     'NoneBot',
     'scheduler',
     'init',
     'get_bot',
-    'run',
     'on_startup',
     'on_websocket_connect',
     'CQHttpError',

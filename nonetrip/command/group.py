@@ -1,7 +1,7 @@
-from typing import Union, Callable
+from typing import Callable, Union
 
-from nonebot.plugin import on_command
-from nonebot.typing import CommandHandler_T, CommandName_T
+from nonetrip.plugin import on_command
+from nonetrip.typing import CommandHandler_T, CommandName_T
 
 
 class CommandGroup:
@@ -13,7 +13,9 @@ class CommandGroup:
 
     def __init__(self, name: Union[str, CommandName_T], **kwargs):
         if 'aliases' in kwargs or 'patterns' in kwargs:
-            raise ValueError('aliases or patterns should not be used as base kwargs for group')
+            raise ValueError(
+                'aliases or patterns should not be used as base kwargs for group'
+            )
         self.basename = (name,) if isinstance(name, str) else name
         self.base_kwargs = kwargs
 
@@ -32,5 +34,5 @@ class CommandGroup:
         sub_name = (name,) if isinstance(name, str) else name
         name = self.basename + sub_name
 
-        final_kwargs = { **self.base_kwargs, **kwargs }
+        final_kwargs = {**self.base_kwargs, **kwargs}
         return on_command(name, **final_kwargs)

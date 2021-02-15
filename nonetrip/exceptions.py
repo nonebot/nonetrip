@@ -1,4 +1,4 @@
-from aiocqhttp import Error as CQHttpError
+from nonetrip.compat import CQHttpError
 
 __all__ = [
     'CQHttpError',

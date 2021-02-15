@@ -1,15 +1,14 @@
-import re
 import asyncio
-from typing import Set, Iterable
+import re
+from typing import Iterable, Set
 
-from aiocqhttp import Event as CQEvent
-from aiocqhttp.message import Message, MessageSegment
-from aiocqhttp.message import escape, unescape
+from nonetrip.compat import Event as CQEvent
+from nonetrip.compat import Message, MessageSegment, escape, unescape
 
 from . import NoneBot
+from .command import SwitchException, handle_command
 from .log import logger
 from .natural_language import handle_natural_language
-from .command import handle_command, SwitchException
 from .plugin import PluginManager
 from .typing import MessagePreprocessor_T
 

@@ -1,15 +1,15 @@
 import asyncio
 import warnings
-from typing import Any, List, Set, Iterable, Optional, Tuple, Union, NamedTuple
+from typing import Any, Iterable, List, NamedTuple, Optional, Set, Tuple, Union
 
-from aiocqhttp import Event as CQEvent
-from aiocqhttp.message import Message
+from nonetrip.compat import Event as CQEvent
+from nonetrip.compat import Message
 
-from .log import logger
 from . import NoneBot
 from .command import call_command
+from .log import logger
 from .session import BaseSession
-from .typing import CommandName_T, CommandArgs_T, PermChecker_T, NLPHandler_T
+from .typing import CommandArgs_T, CommandName_T, NLPHandler_T, PermChecker_T
 
 
 class NLProcessor:
@@ -19,8 +19,7 @@ class NLProcessor:
 
     def __init__(self, *, func: NLPHandler_T, keywords: Optional[Iterable[str]],
                  only_to_me: bool, only_short_message: bool,
-                 allow_empty_message: bool,
-                 perm_checker_func: PermChecker_T):
+                 allow_empty_message: bool, perm_checker_func: PermChecker_T):
         self.func = func
         self.keywords = keywords
         self.only_to_me = only_to_me
@@ -28,7 +27,8 @@ class NLProcessor:
         self.allow_empty_message = allow_empty_message
         self.perm_checker_func = perm_checker_func  # returns True if can trigger
 
-    async def test(self, session: 'NLPSession', 
+    async def test(self,
+                   session: 'NLPSession',
                    msg_text_length: Optional[int] = None) -> bool:
         """
         Test whether the session matches this (self) NL processor.
@@ -109,10 +109,10 @@ class NLPManager:
         return False
 
     @classmethod
-    def switch_nlprocessor_global(cls,
-                                  processor: NLProcessor,
-                                  state: Optional[bool] = None
-                                  ) -> Optional[bool]:
+    def switch_nlprocessor_global(
+            cls,
+            processor: NLProcessor,
+            state: Optional[bool] = None) -> Optional[bool]:
         """Remove or add a natural language processor globally
         
         Args:
@@ -223,7 +223,8 @@ async def handle_natural_language(bot: NoneBot, event: CQEvent,
     intent_commands: List[IntentCommand] = []
     procs_empty = True
 
-    for res in asyncio.as_completed([try_run_nlp(p) for p in manager.nl_processors]):
+    for res in asyncio.as_completed(
+        [try_run_nlp(p) for p in manager.nl_processors]):
         result, should_run = await res
         if not should_run:
             continue
@@ -242,8 +243,7 @@ async def handle_natural_language(bot: NoneBot, event: CQEvent,
     if intent_commands and intent_commands[0].confidence >= 60.0:
         # choose the intent command with highest confidence
         chosen_cmd = intent_commands[0]
-        logger.debug(
-            f'Intent command with highest confidence: {chosen_cmd}')
+        logger.debug(f'Intent command with highest confidence: {chosen_cmd}')
         return await call_command(bot,
                                   event,
                                   chosen_cmd.name,

@@ -1,12 +1,13 @@
-from typing import TYPE_CHECKING, Optional, Union, List, Dict, Any, Sequence, Callable, Tuple, Awaitable, Pattern, Iterable
+from typing import (TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterable,
+                    List, Optional, Pattern, Sequence, Tuple, Union)
 
 if TYPE_CHECKING:
-    from aiocqhttp import Event as CQEvent
-    from nonebot import NoneBot
-    from nonebot.plugin import PluginManager
-    from nonebot.command import CommandSession
-    from nonebot.natural_language import NLPSession, IntentCommand
-    from nonebot.notice_request import NoticeSession, RequestSession
+    from nonetrip import NoneBot
+    from nonetrip.command import CommandSession
+    from nonetrip.compat import Event as CQEvent
+    from nonetrip.natural_language import IntentCommand, NLPSession
+    from nonetrip.notice_request import NoticeSession, RequestSession
+    from nonetrip.plugin import PluginManager
 
 Context_T = Dict[str, Any]
 Message_T = Union[str, Dict[str, Any], List[Dict[str, Any]]]
@@ -20,9 +21,9 @@ Filter_T = Callable[[Any], Union[Any, Awaitable[Any]]]
 PermChecker_T = Callable[["NoneBot", "CQEvent"], Awaitable[bool]]
 NLPHandler_T = Callable[["NLPSession"], Awaitable[Optional["IntentCommand"]]]
 NoticeHandler_T = Callable[["NoticeSession"], Awaitable[Any]]
-RequestHandler_T = Callable[["RequestSession"] , Awaitable[Any]]
-MessagePreprocessor_T = Callable[["NoneBot", "CQEvent", "PluginManager"], Awaitable[Any]]
-
+RequestHandler_T = Callable[["RequestSession"], Awaitable[Any]]
+MessagePreprocessor_T = Callable[["NoneBot", "CQEvent", "PluginManager"],
+                                 Awaitable[Any]]
 
 __all__ = [
     'Context_T',

@@ -1,13 +1,12 @@
 from typing import List, Union
 
-from aiocqhttp import Event as CQEvent
-from aiocqhttp.bus import EventBus
+from nonetrip.compat import CQHttpError
+from nonetrip.compat import Event as CQEvent
+from nonetrip.compat import EventBus
 
 from . import NoneBot
 from .log import logger
-from .exceptions import CQHttpError
 from .session import BaseSession
-
 from .typing import NoticeHandler_T, RequestHandler_T
 
 _bus = EventBus()
@@ -17,7 +16,8 @@ class EventHandler:
     """INTERNAL API"""
     __slots__ = ('events', 'func')
 
-    def __init__(self, events: List[str], func: Union[NoticeHandler_T, RequestHandler_T]):
+    def __init__(self, events: List[str], func: Union[NoticeHandler_T,
+                                                      RequestHandler_T]):
         self.events = events
         self.func = func
 

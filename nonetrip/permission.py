@@ -1,10 +1,11 @@
 from collections import namedtuple
 
 from aiocache import cached
-from aiocqhttp import Event as CQEvent
+
+from nonetrip.compat import CQHttpError
+from nonetrip.compat import Event as CQEvent
 
 from . import NoneBot
-from .exceptions import CQHttpError
 
 PRIVATE_FRIEND = 0x0001
 PRIVATE_GROUP = 0x0002

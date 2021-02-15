@@ -1,21 +1,22 @@
-import re
 import asyncio
+import re
 import warnings
 from datetime import datetime, timedelta
 from functools import partial
-from typing import (NoReturn, Tuple, Union, Iterable, Any, Optional, List, Dict,
-                    Awaitable, Pattern, Type)
+from typing import (Any, Awaitable, Dict, Iterable, List, NoReturn, Optional,
+                    Pattern, Tuple, Type, Union)
 
-from aiocqhttp import Event as CQEvent
-from aiocqhttp.message import Message
-
-from nonebot import NoneBot
-from nonebot.command.argfilter import ValidateError
-from nonebot.helpers import context_id, send, render_expression
 from nonebot.log import logger
-from nonebot.session import BaseSession
-from nonebot.typing import (CommandName_T, CommandArgs_T, CommandHandler_T,
-                            Message_T, PermChecker_T, State_T, Filter_T, Patterns_T)
+
+from nonetrip import NoneBot
+from nonetrip.command.argfilter import ValidateError
+from nonetrip.compat import Event as CQEvent
+from nonetrip.compat import Message
+from nonetrip.helpers import context_id, render_expression, send
+from nonetrip.session import BaseSession
+from nonetrip.typing import (CommandArgs_T, CommandHandler_T, CommandName_T,
+                             Filter_T, Message_T, Patterns_T, PermChecker_T,
+                             State_T)
 
 # key: context id
 # value: CommandSession object
@@ -84,7 +85,8 @@ class Command:
     However I cannot type it until Python 3.10. see bugs.python.org/issue41810.
     """
     __slots__ = ('name', 'func', 'only_to_me', 'privileged', 'args_parser_func',
-                 'perm_checker_func', 'expire_timeout', 'run_timeout', 'session_class')
+                 'perm_checker_func', 'expire_timeout', 'run_timeout',
+                 'session_class')
 
     def __init__(self, *, name: CommandName_T, func: CommandHandler_T,
                  only_to_me: bool, privileged: bool,
@@ -682,7 +684,9 @@ class CommandSession(BaseSession):
             self._run_future(self.send(message, **kwargs))
         self._raise(_PauseException())
 
-    async def apause(self, message: Optional[Message_T] = None, **kwargs) -> None:
+    async def apause(self,
+                     message: Optional[Message_T] = None,
+                     **kwargs) -> None:
         """
         Pause the session for further interaction. The control flow will pick
         up where it is left over when this command session is recalled.
@@ -940,7 +944,6 @@ def kill_current_session(event: CQEvent) -> None:
 
 
 from nonebot.command.group import CommandGroup
-
 
 __all__ = [
     'CommandManager',

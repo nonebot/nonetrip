@@ -1,4 +1,4 @@
-from aiocqhttp import Event as CQEvent
+from nonetrip.compat import Event as CQEvent
 
 from . import NoneBot
 from .helpers import send

@@ -1,17 +1,19 @@
 import asyncio
 import hashlib
 import random
-from typing import Sequence, Any
+from typing import Any, Sequence
 
-from aiocqhttp.message import escape
-from aiocqhttp import Event as CQEvent
+from nonetrip.compat import CQHttpError
+from nonetrip.compat import Event as CQEvent
+from nonetrip.compat import escape
 
 from . import NoneBot
-from .exceptions import CQHttpError
-from .typing import Message_T, Expression_T
+from .typing import Expression_T, Message_T
 
 
-def context_id(event: CQEvent, *, mode: str = 'default',
+def context_id(event: CQEvent,
+               *,
+               mode: str = 'default',
                use_hash: bool = False) -> str:
     """
     Calculate a unique id representing the context of the given event.
@@ -68,8 +70,7 @@ async def send(bot: NoneBot,
         return None
 
 
-async def send_to_superusers(bot: NoneBot,
-                             message: Message_T,
+async def send_to_superusers(bot: NoneBot, message: Message_T,
                              **kwargs) -> None:
     """
     Send a private message to all superusers that are defined in config.

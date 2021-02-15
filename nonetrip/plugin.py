@@ -1,20 +1,24 @@
+import importlib
 import os
 import re
-import sys
 import shlex
+import sys
 import warnings
-import importlib
 from datetime import timedelta
 from functools import partial
 from types import ModuleType
-from typing import Any, Set, Dict, TypeVar, Union, Optional, Iterable, Callable, Type, overload
+from typing import (Any, Callable, Dict, Iterable, Optional, Set, Type, TypeVar,
+                    Union, overload)
 
-from .log import logger
-from nonebot import permission as perm
+from nonetrip import permission as perm
+
 from .command import Command, CommandManager, CommandSession
-from .notice_request import _bus, EventHandler
-from .natural_language import NLProcessor, NLPManager
-from .typing import CommandName_T, CommandHandler_T, NLPHandler_T, NoticeHandler_T, Patterns_T, PermChecker_T, RequestHandler_T
+from .log import logger
+from .natural_language import NLPManager, NLProcessor
+from .notice_request import EventHandler, _bus
+from .typing import (CommandHandler_T, CommandName_T, NLPHandler_T,
+                     NoticeHandler_T, Patterns_T, PermChecker_T,
+                     RequestHandler_T)
 
 
 class Plugin:
@@ -355,15 +359,9 @@ def get_loaded_plugins() -> Set[Plugin]:
 
 
 def on_command_custom(
-    name: Union[str, CommandName_T],
-    *,
-    aliases: Union[Iterable[str], str],
-    patterns: Patterns_T,
-    only_to_me: bool,
-    privileged: bool,
-    shell_like: bool,
-    perm_checker: PermChecker_T,
-    expire_timeout: Optional[timedelta],
+    name: Union[str, CommandName_T], *, aliases: Union[Iterable[str], str],
+    patterns: Patterns_T, only_to_me: bool, privileged: bool, shell_like: bool,
+    perm_checker: PermChecker_T, expire_timeout: Optional[timedelta],
     run_timeout: Optional[timedelta],
     session_class: Optional[Type[CommandSession]]
 ) -> Callable[[CommandHandler_T], CommandHandler_T]:
@@ -374,6 +372,7 @@ def on_command_custom(
     dev: This function may not last long. Kill it when this function is referenced
     only once
     """
+
     def deco(func: CommandHandler_T) -> CommandHandler_T:
         if not isinstance(name, (str, tuple)):
             raise TypeError('the name of a command must be a str or tuple')
@@ -444,20 +443,23 @@ def on_command(
     :param run_timeout: will override SESSION_RUN_TIMEOUT if provided
     :param session_class: session class
     """
-    perm_checker = partial(perm.check_permission, permission_required=permission)
-    return on_command_custom(name, aliases=aliases, patterns=patterns,
-                             only_to_me=only_to_me, privileged=privileged,
-                             shell_like=shell_like, perm_checker=perm_checker,
-                             expire_timeout=expire_timeout, run_timeout=run_timeout,
+    perm_checker = partial(perm.check_permission,
+                           permission_required=permission)
+    return on_command_custom(name,
+                             aliases=aliases,
+                             patterns=patterns,
+                             only_to_me=only_to_me,
+                             privileged=privileged,
+                             shell_like=shell_like,
+                             perm_checker=perm_checker,
+                             expire_timeout=expire_timeout,
+                             run_timeout=run_timeout,
                              session_class=session_class)
 
 
 def on_natural_language_custom(
-    keywords: Union[Optional[Iterable[str]], str, NLPHandler_T],
-    *,
-    only_to_me: bool,
-    only_short_message: bool,
-    allow_empty_message: bool,
+    keywords: Union[Optional[Iterable[str]], str, NLPHandler_T], *,
+    only_to_me: bool, only_short_message: bool, allow_empty_message: bool,
     perm_checker: PermChecker_T
 ) -> Union[Callable[[NLPHandler_T], NLPHandler_T], NLPHandler_T]:
     """
@@ -501,12 +503,12 @@ def on_natural_language(func: NLPHandler_T) -> NLPHandler_T:
 
 @overload
 def on_natural_language(
-    keywords: Optional[Union[Iterable[str], str]] = ...,
-    *,
-    permission: int = ...,
-    only_to_me: bool = ...,
-    only_short_message: bool = ...,
-    allow_empty_message: bool = ...
+        keywords: Optional[Union[Iterable[str], str]] = ...,
+        *,
+        permission: int = ...,
+        only_to_me: bool = ...,
+        only_short_message: bool = ...,
+        allow_empty_message: bool = ...
 ) -> Callable[[NLPHandler_T], NLPHandler_T]:
     """
     Decorator to register a function as a natural language processor.
@@ -519,19 +521,20 @@ def on_natural_language(
     """
 
 
-def on_natural_language(
-    keywords: Union[Optional[Iterable[str]], str, NLPHandler_T] = None,
-    *,
-    permission: int = perm.EVERYBODY,
-    only_to_me: bool = True,
-    only_short_message: bool = True,
-    allow_empty_message: bool = False
-):
+def on_natural_language(keywords: Union[Optional[Iterable[str]], str,
+                                        NLPHandler_T] = None,
+                        *,
+                        permission: int = perm.EVERYBODY,
+                        only_to_me: bool = True,
+                        only_short_message: bool = True,
+                        allow_empty_message: bool = False):
     """
     Implementation of on_natural_language overloads.
     """
-    perm_checker = partial(perm.check_permission, permission_required=permission)
-    return on_natural_language_custom(keywords, only_to_me=only_to_me,
+    perm_checker = partial(perm.check_permission,
+                           permission_required=permission)
+    return on_natural_language_custom(keywords,
+                                      only_to_me=only_to_me,
                                       only_short_message=only_short_message,
                                       allow_empty_message=allow_empty_message,
                                       perm_checker=perm_checker)
@@ -548,7 +551,8 @@ def _make_event_deco(post_type: str):
         def deco(func: _Teh) -> _Teh:
             if isinstance(arg, str):
                 events_tmp = list(
-                    map(lambda x: f"{post_type}.{x}", [arg, *events]))  # if arg is part of events str
+                    map(lambda x: f"{post_type}.{x}",
+                        [arg, *events]))  # if arg is part of events str
                 for e in events_tmp:
                     _bus.subscribe(e, func)
                 handler = EventHandler(events_tmp, func)
@@ -566,26 +570,29 @@ def _make_event_deco(post_type: str):
 
 
 @overload
-def on_notice(func: NoticeHandler_T) -> NoticeHandler_T: ...
+def on_notice(func: NoticeHandler_T) -> NoticeHandler_T:
+    ...
 
 
 @overload
-def on_notice(*events: str) -> Callable[[NoticeHandler_T], NoticeHandler_T]: ...
+def on_notice(*events: str) -> Callable[[NoticeHandler_T], NoticeHandler_T]:
+    ...
 
 
 on_notice = _make_event_deco('notice')  # type: ignore[override]
 
 
 @overload
-def on_request(func: RequestHandler_T) -> RequestHandler_T: ...
+def on_request(func: RequestHandler_T) -> RequestHandler_T:
+    ...
 
 
 @overload
-def on_request(*events: str) -> Callable[[RequestHandler_T], RequestHandler_T]: ...
+def on_request(*events: str) -> Callable[[RequestHandler_T], RequestHandler_T]:
+    ...
 
 
 on_request = _make_event_deco('request')  # type: ignore[override]
-
 
 __all__ = [
     'Plugin',
