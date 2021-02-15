@@ -943,7 +943,7 @@ def kill_current_session(event: CQEvent) -> None:
         del _sessions[ctx_id]
 
 
-from nonebot.command.group import CommandGroup
+from nonetrip.command.group import CommandGroup
 
 __all__ = [
     'CommandManager',

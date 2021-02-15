@@ -1,6 +1,6 @@
 from typing import Optional
 
-from nonebot.typing import Message_T
+from nonetrip.typing import Message_T
 
 
 class ValidateError(ValueError):

@@ -346,7 +346,7 @@ def load_builtin_plugins() -> Set[Plugin]:
     Load built-in plugins distributed along with "nonebot" package.
     """
     plugin_dir = os.path.join(os.path.dirname(__file__), 'plugins')
-    return load_plugins(plugin_dir, 'nonebot.plugins')
+    return load_plugins(plugin_dir, 'nonetrip.plugins')
 
 
 def get_loaded_plugins() -> Set[Plugin]:

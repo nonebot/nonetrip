@@ -1,8 +1,11 @@
 import asyncio
 import logging
-from typing import Any, Awaitable, Callable, Optional
+from typing import Any, Awaitable, Callable, Dict, List, Optional
 
-from nonetrip.compat import CQHttp, Event, Message
+from nonebot import Config, get_driver
+
+from nonetrip import default_config
+from nonetrip.compat import CQHttp, DefaultConfig, Event, Message
 
 from .log import logger
 from .sched import Scheduler
@@ -16,34 +19,49 @@ else:
 class NoneBot(CQHttp):
 
     def __init__(self, config_object: Optional[Any] = None):
-        if config_object is None:
-            from . import default_config as config_object
+        super().__init__()
 
-        config_dict = {
-            k: v
-            for k, v in config_object.__dict__.items()
-            if k.isupper() and not k.startswith('_')
-        }
-        logger.debug(f'Loaded configurations: {config_dict}')
-        super().__init__(message_class=Message,
-                         **{k.lower(): v for k, v in config_dict.items()})
+        nonebot_config: Config = get_driver().config
+        config_object = config_object or default_config
+        config_keys: List[str] = [
+            key for key in {
+                *dir(default_config), *map(lambda x: x.upper(),
+                                           nonebot_config.dict().keys())
+            } if key.isupper() and not key.startswith('_')
+        ]
+        config_dict: Dict[str, Any] = {}
+
+        for key in config_keys:
+            if hasattr(config_object, key):
+                value = getattr(config_object, key)
+                if value == getattr(default_config, key):
+                    value = nonebot_config.dict().get(key, value)
+            else:
+                value = nonebot_config.dict().get(key)
+            config_dict[key] = value
+
+        self.config = DefaultConfig.parse_obj(config_dict)
+
+        self.logger.setLevel(
+            logging.DEBUG if self.config.DEBUG else logging.INFO)
+
+        logger.debug(f"Loaded configurations: {config_dict}")
 
         self.config = config_object
-        self.asgi.debug = self.config.DEBUG
 
         from .message import handle_message
         from .notice_request import handle_notice_or_request
 
         @self.on_message
-        async def _(event: Event):
+        async def _(event: Event):  # type:ignore
             asyncio.create_task(handle_message(self, event))
 
         @self.on_notice
-        async def _(event: Event):
+        async def _(event: Event):  # type: ignore
             asyncio.create_task(handle_notice_or_request(self, event))
 
         @self.on_request
-        async def _(event: Event):
+        async def _(event: Event):  # type: ignore
             asyncio.create_task(handle_notice_or_request(self, event))
 
 
@@ -70,7 +88,7 @@ def init(config_object: Optional[Any] = None,
         logger.setLevel(logging.INFO)
 
     if start_scheduler:
-        _bot.server_app.before_serving(_start_scheduler)
+        on_startup(_start_scheduler)
 
 
 async def _start_scheduler():
@@ -94,15 +112,12 @@ def get_bot() -> NoneBot:
     return _bot
 
 
-
-
-
 def on_startup(func: Callable[[], Awaitable[None]]) \
         -> Callable[[], Awaitable[None]]:
     """
     Decorator to register a function as startup callback.
     """
-    return get_bot().server_app.before_serving(func)
+    return get_driver().on_startup(func)
 
 
 def on_websocket_connect(func: Callable[[Event], Awaitable[None]]) \

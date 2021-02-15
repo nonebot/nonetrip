@@ -6,14 +6,14 @@ to log messages.
 """
 
 import logging
-import sys
+
+from nonebot.log import LoguruHandler
 
 logger = logging.getLogger('nonebot')
-default_handler = logging.StreamHandler(sys.stdout)
+default_handler = LoguruHandler()
 default_handler.setFormatter(
     logging.Formatter('[%(asctime)s %(name)s] %(levelname)s: %(message)s'))
 logger.addHandler(default_handler)
-
 
 __all__ = [
     'logger',
