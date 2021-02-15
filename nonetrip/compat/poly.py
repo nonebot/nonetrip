@@ -1,7 +1,6 @@
 import asyncio
-from functools import partial, singledispatchmethod
-from typing import (TYPE_CHECKING, Any, Callable, Coroutine, Dict, Optional,
-                    TypeVar)
+from functools import partial
+from typing import Any, Callable, Coroutine, Dict, Optional, TypeVar
 
 from nonebot import get_app, get_asgi, get_bots
 from nonebot.adapters.cqhttp import Bot as CQBot
@@ -10,9 +9,9 @@ from nonebot.adapters.cqhttp.message import Message
 from nonebot.exception import ApiNotAvailable
 from nonebot.plugin import on_message, on_metaevent, on_notice, on_request
 from nonebot.typing import T_Handler
+from singledispatchmethod import singledispatchmethod
 
-if TYPE_CHECKING:
-    from nonetrip.typing import Message_T
+from nonetrip.typing import Message_T
 
 _AsyncCallable_T = TypeVar("_AsyncCallable_T", bound=Callable[..., Coroutine])
 _HandlerDecorator = Callable[[_AsyncCallable_T], _AsyncCallable_T]
