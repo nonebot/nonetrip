@@ -404,10 +404,13 @@ python-versions = ">=3.6"
 docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "jaraco.test (>=3.2.0)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
+[extras]
+scheduler = ["APScheduler"]
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "29f85d437e44c8c2942ff182412b63b72dc60e58b8b678e04ff5886dd80ca458"
+content-hash = "1cd679c8d328b911dd9d6038ebdbea280aad889eb2cdd77dcad3b4244f07b115"
 
 [metadata.files]
 aiocache = [
