@@ -289,6 +289,14 @@ idna = {version = "*", optional = true, markers = "extra == \"idna2008\""}
 idna2008 = ["idna"]
 
 [[package]]
+name = "singledispatchmethod"
+version = "1.0"
+description = "Backport of @functools.singledispatchmethod to Python 2.7-3.7."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "six"
 version = "1.15.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -410,7 +418,7 @@ scheduler = ["APScheduler"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "1cd679c8d328b911dd9d6038ebdbea280aad889eb2cdd77dcad3b4244f07b115"
+content-hash = "864a3ad250e135b12d7e9b5121b109fe2adc93970e8374e729516c52556dfce3"
 
 [metadata.files]
 aiocache = [
@@ -533,6 +541,9 @@ pytz = [
 rfc3986 = [
     {file = "rfc3986-1.4.0-py2.py3-none-any.whl", hash = "sha256:af9147e9aceda37c91a05f4deb128d4b4b49d6b199775fd2d2927768abdc8f50"},
     {file = "rfc3986-1.4.0.tar.gz", hash = "sha256:112398da31a3344dc25dbf477d8df6cb34f9278a94fee2625d89e4514be8bb9d"},
+]
+singledispatchmethod = [
+    {file = "singledispatchmethod-1.0.tar.gz", hash = "sha256:183a7fbeab53b9c9d182f8b8f9c2d7e109a7d40afaa30261d81dd8de68cd73bf"},
 ]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
