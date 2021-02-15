@@ -1,6 +1,7 @@
 import asyncio
 from functools import partial, singledispatchmethod
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, Optional, TypeVar
+from typing import (TYPE_CHECKING, Any, Callable, Coroutine, Dict, Optional,
+                    TypeVar)
 
 from nonebot import get_app, get_asgi, get_bots
 from nonebot.adapters.cqhttp import Bot as CQBot
@@ -11,7 +12,7 @@ from nonebot.plugin import on_message, on_metaevent, on_notice, on_request
 from nonebot.typing import T_Handler
 
 if TYPE_CHECKING:
-    from nonetrip.comp.typing import Message_T
+    from nonetrip.typing import Message_T
 
 _AsyncCallable_T = TypeVar("_AsyncCallable_T", bound=Callable[..., Coroutine])
 _HandlerDecorator = Callable[[_AsyncCallable_T], _AsyncCallable_T]
@@ -113,7 +114,7 @@ class CQHttp:
 
     @property
     def logger(self):
-        from .comp.log import logger
+        from nonetrip.log import logger
 
         return logger
 
@@ -134,6 +135,7 @@ class CQHttp:
         function: Callable[[Event], Coroutine],
         post_type: Optional[str] = None,
     ) -> T_Handler:
+
         async def handler(bot: CQBot, event: NoneBotEvent):
             if post_type is not None and event.post_type != post_type:
                 return
@@ -151,8 +153,10 @@ class CQHttp:
 
     @on_message.register  # type:ignore
     def _on_specified_message(self, arg: str) -> _HandlerDecorator:
+
         def wrapper(function: _AsyncCallable_T) -> _AsyncCallable_T:
-            self.message_matcher.append_handler(self._handler_factory(function, arg))
+            self.message_matcher.append_handler(
+                self._handler_factory(function, arg))
             return function
 
         return wrapper
@@ -164,8 +168,10 @@ class CQHttp:
 
     @on_notice.register  # type: ignore
     def _on_specified_notice(self, arg: str) -> _HandlerDecorator:
+
         def wrapper(function: _AsyncCallable_T) -> _AsyncCallable_T:
-            self.notice_handler.append_handler(self._handler_factory(function, arg))
+            self.notice_handler.append_handler(
+                self._handler_factory(function, arg))
             return function
 
         return wrapper
@@ -177,8 +183,10 @@ class CQHttp:
 
     @on_request.register  # type: ignore
     def _on_specified_request(self, arg: str) -> _HandlerDecorator:
+
         def wrapper(function: _AsyncCallable_T) -> _AsyncCallable_T:
-            self.request_handler.append_handler(self._handler_factory(function, arg))
+            self.request_handler.append_handler(
+                self._handler_factory(function, arg))
             return function
 
         return wrapper
@@ -190,8 +198,10 @@ class CQHttp:
 
     @on_metaevent.register  # type:ignore
     def _on_specified_metaevent(self, arg: str) -> _HandlerDecorator:
+
         def wrapper(function: _AsyncCallable_T) -> _AsyncCallable_T:
-            self.metaevent_handler.append_handler(self._handler_factory(function, arg))
+            self.metaevent_handler.append_handler(
+                self._handler_factory(function, arg))
             return function
 
         return wrapper

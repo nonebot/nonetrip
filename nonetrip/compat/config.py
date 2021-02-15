@@ -4,10 +4,11 @@ from typing import Any, Dict, Optional, Pattern, Set, Union
 from nonebot.config import BaseConfig
 from pydantic import Extra
 
-from nonetrip.comp.typing import Expression_T
+from nonetrip.typing import Expression_T
 
 
 class DefaultConfig(BaseConfig):
+
     class Config:
         extra = Extra.allow
 
@@ -31,4 +32,6 @@ class DefaultConfig(BaseConfig):
 
     SESSION_CANCEL_EXPRESSION: Expression_T = "好的"
 
-    APSCHEDULER_CONFIG: Dict[str, Any] = {"apscheduler.timezone": "Asia/Shanghai"}
+    APSCHEDULER_CONFIG: Dict[str, Any] = {
+        "apscheduler.timezone": "Asia/Shanghai"
+    }

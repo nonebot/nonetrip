@@ -14,9 +14,12 @@ async def parallel_run(functions: Iterable[AsyncCallable], *args, **kwargs):
 
 
 class EventBus:
+
     def __init__(self):
-        self._subscribers: DefaultDict[str, Set[AsyncCallable]] = defaultdict(set)
-        self._hooks_before: DefaultDict[str, Set[AsyncCallable]] = defaultdict(set)
+        self._subscribers: DefaultDict[str,
+                                       Set[AsyncCallable]] = defaultdict(set)
+        self._hooks_before: DefaultDict[str,
+                                        Set[AsyncCallable]] = defaultdict(set)
 
     def subscribe(self, event: str, func: Callable) -> None:
         self._subscribers[event].add(func)
@@ -33,6 +36,7 @@ class EventBus:
             self._hooks_before[event].remove(func)
 
     def on(self, event: str) -> Callable:
+
         def decorator(func: Callable) -> Callable:
             self.subscribe(event, func)
             return func
@@ -40,6 +44,7 @@ class EventBus:
         return decorator
 
     def before(self, event: str) -> Callable:
+
         def decorator(func: Callable) -> Callable:
             self.hook_before(event, func)
             return func
@@ -59,7 +64,8 @@ class EventBus:
 
         results = []
         while True:
-            results += await parallel_run(self._subscribers[event], *args, **kwargs)
+            results += await parallel_run(self._subscribers[event], *args,
+                                          **kwargs)
             event, *sub_event = event.rsplit(".", maxsplit=1)
             if not sub_event:
                 # the current event is the root event
