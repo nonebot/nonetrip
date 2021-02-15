@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "nonetrip"
+version = "0.1.0"
+description = "A compatibility layer plug-in on NoneBot2 which can provide compatibility with NoneBot1"
+authors = ["mix <admin@yami.im>","cleoold <cleoold@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+nonebot2 = "^2.0.0-alpha.10"
+APScheduler = {version = "^3.7.0", optional = true}
+aiocache = "^0.11.1"
+
+[tool.poetry.dev-dependencies]
+yapf = "^0.30.0"
+flake8 = "^3.8.4"
+
+[tool.poetry.extras]
+scheduler = ["APScheduler"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
