@@ -2,7 +2,7 @@ import asyncio
 from functools import partial
 from typing import Any, Callable, Coroutine, Dict, Optional, TypeVar
 
-from nonebot import get_app, get_asgi, get_bots
+from nonebot import get_app, get_asgi, get_bots, get_driver
 from nonebot.adapters.cqhttp import Bot as CQBot
 from nonebot.adapters.cqhttp.event import Event as NoneBotEvent
 from nonebot.adapters.cqhttp.event import MessageEvent
@@ -33,7 +33,7 @@ class Event(dict):
         """
         payload_dict = payload.dict()
         if isinstance(payload, MessageEvent):
-            payload_dict['message'] = Message([
+            payload_dict["message"] = Message([
                 MessageSegment(type_=segment.type, data=segment.data)
                 for segment in payload.message
             ])
@@ -88,7 +88,7 @@ class Event(dict):
     flag: Optional[str]  # 请求标识
 
     def copy(self):
-        return self.__class__(self.copy())
+        return Event(**self)
 
     def __getattr__(self, key) -> Optional[Any]:
         return self.get(key)
@@ -101,10 +101,16 @@ class Event(dict):
 
 
 class CQHttp:
-    message_matcher = Matcher.new('message')
-    notice_handler = Matcher.new('notice')
-    request_handler = Matcher.new('request')
-    metaevent_handler = Matcher.new('meta_event')
+    message_matcher = Matcher.new("message")
+    notice_handler = Matcher.new("notice")
+    request_handler = Matcher.new("request")
+    metaevent_handler = Matcher.new("meta_event")
+
+    _loop: asyncio.AbstractEventLoop
+
+    def __init__(self):
+        get_driver().on_startup(
+            lambda: setattr(self, "_loop", asyncio.get_running_loop()))
 
     @property
     def asgi(self):
@@ -121,8 +127,9 @@ class CQHttp:
         return logger
 
     @property
-    def loop(self):
-        return asyncio.get_running_loop()
+    def loop(self) -> asyncio.AbstractEventLoop:
+        assert isinstance(self._loop, asyncio.AbstractEventLoop)
+        return self._loop
 
     @property
     def bot(self) -> CQBot:
