@@ -1,9 +1,8 @@
 import re
 from typing import List
 
-from aiocqhttp.message import Message
-
-from nonebot.typing import Message_T
+from nonetrip.compat import Message
+from nonetrip.typing import Message_T
 
 
 def _extract_text(arg: Message_T) -> str:
@@ -31,7 +30,6 @@ def _extract_numbers(arg: Message_T) -> List[float]:
 extract_text = _extract_text
 extract_image_urls = _extract_image_urls
 extract_numbers = _extract_numbers
-
 
 __all__ = [
     'extract_text',

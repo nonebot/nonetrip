@@ -1,8 +1,8 @@
 import re
-from typing import Callable, Any
+from typing import Any, Callable
 
-from nonebot.typing import Filter_T
-from nonebot.command.argfilter import ValidateError
+from nonetrip.command.argfilter import ValidateError
+from nonetrip.typing import Filter_T
 
 
 class BaseValidator:
@@ -34,7 +34,8 @@ def not_empty(message=None) -> Filter_T:
     return validate
 
 
-def fit_size(min_length: int = 0, max_length: int = None,
+def fit_size(min_length: int = 0,
+             max_length: int = None,
              message=None) -> Filter_T:
     """
     Validate any sized object to ensure the size/length
@@ -51,7 +52,10 @@ def fit_size(min_length: int = 0, max_length: int = None,
     return validate
 
 
-def match_regex(pattern: str, message=None, *, flags=0,
+def match_regex(pattern: str,
+                message=None,
+                *,
+                flags=0,
                 fullmatch: bool = False) -> Filter_T:
     """
     Validate any string object to ensure it matches a given pattern.

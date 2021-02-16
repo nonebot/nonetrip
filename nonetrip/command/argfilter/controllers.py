@@ -1,7 +1,7 @@
 import re
 
-from nonebot import CommandSession
-from nonebot.helpers import render_expression
+from nonetrip import CommandSession
+from nonetrip.helpers import render_expression
 
 
 def handle_cancellation(session: CommandSession):
