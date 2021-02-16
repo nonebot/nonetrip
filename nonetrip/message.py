@@ -79,6 +79,7 @@ async def handle_message(bot: NoneBot, event: CQEvent) -> None:
 
 
 def _check_at_me(bot: NoneBot, event: CQEvent) -> None:
+    assert isinstance(event.message, Message)
     if event.detail_type == 'private':
         event['to_me'] = True
     else:

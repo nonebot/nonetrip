@@ -25,8 +25,10 @@ class NoneBot(CQHttp):
         config_object = config_object or default_config
         config_keys: List[str] = [
             key for key in {
-                *dir(default_config), *map(lambda x: x.upper(),
-                                           nonebot_config.dict().keys())
+                *dir(config_object),
+                *map(lambda x: x.upper(),
+                     nonebot_config.dict().keys()),
+                *dir(default_config),
             } if key.isupper() and not key.startswith('_')
         ]
         config_dict: Dict[str, Any] = {}
@@ -34,8 +36,6 @@ class NoneBot(CQHttp):
         for key in config_keys:
             if hasattr(config_object, key):
                 value = getattr(config_object, key)
-                if value == getattr(default_config, key):
-                    value = nonebot_config.dict().get(key, value)
             else:
                 value = nonebot_config.dict().get(key)
             config_dict[key] = value

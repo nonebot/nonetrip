@@ -5,13 +5,15 @@ from typing import Any, Callable, Coroutine, Dict, Optional, TypeVar
 from nonebot import get_app, get_asgi, get_bots
 from nonebot.adapters.cqhttp import Bot as CQBot
 from nonebot.adapters.cqhttp.event import Event as NoneBotEvent
-from nonebot.adapters.cqhttp.message import Message
+from nonebot.adapters.cqhttp.event import MessageEvent
 from nonebot.exception import ApiNotAvailable
-from nonebot.plugin import on_message, on_metaevent, on_notice, on_request
+from nonebot.matcher import Matcher
 from nonebot.typing import T_Handler
 from singledispatchmethod import singledispatchmethod
 
 from nonetrip.typing import Message_T
+
+from .message import Message, MessageSegment
 
 _AsyncCallable_T = TypeVar("_AsyncCallable_T", bound=Callable[..., Coroutine])
 _HandlerDecorator = Callable[[_AsyncCallable_T], _AsyncCallable_T]
@@ -24,17 +26,18 @@ class Event(dict):
     `None`）依事件不同而不同。
     """
 
-    @staticmethod
-    def from_payload(payload: NoneBotEvent) -> "Optional[Event]":
+    @classmethod
+    def from_payload(cls, payload: NoneBotEvent) -> "Event":
         """
         从 CQHTTP 事件数据构造 `Event` 对象。
         """
-        try:
-            e = Event(payload.dict())
-            _ = e.type, e.detail_type
-            return e
-        except KeyError:
-            return None
+        payload_dict = payload.dict()
+        if isinstance(payload, MessageEvent):
+            payload_dict['message'] = Message([
+                MessageSegment(type_=segment.type, data=segment.data)
+                for segment in payload.message
+            ])
+        return cls(payload_dict)
 
     @property
     def type(self) -> str:
@@ -98,10 +101,10 @@ class Event(dict):
 
 
 class CQHttp:
-    message_matcher = on_message()
-    notice_handler = on_notice()
-    request_handler = on_request()
-    metaevent_handler = on_metaevent()
+    message_matcher = Matcher.new('message')
+    notice_handler = Matcher.new('notice')
+    request_handler = Matcher.new('request')
+    metaevent_handler = Matcher.new('meta_event')
 
     @property
     def asgi(self):
