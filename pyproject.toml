@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonetrip"
-version = "0.3.1"
+version = "0.3.2"
 description = "A compatibility layer plug-in on NoneBot2 which can provide compatibility with NoneBot1"
 authors = ["mix <admin@yami.im>","cleoold <cleoold@gmail.com>"]
 license = "MIT"

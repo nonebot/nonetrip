@@ -6,6 +6,7 @@ from nonebot import get_app, get_asgi, get_bots, get_driver
 from nonebot.adapters.cqhttp import Bot as CQBot
 from nonebot.adapters.cqhttp.event import Event as NoneBotEvent
 from nonebot.adapters.cqhttp.event import MessageEvent
+from nonebot.adapters.cqhttp.message import Message as NoneBotMessage
 from nonebot.exception import ApiNotAvailable
 from nonebot.matcher import Matcher
 from nonebot.typing import T_Handler
@@ -220,7 +221,9 @@ class CQHttp:
     async def send(self, event: Event, message: "Message_T", **kwargs):
         bot = get_bots().get(str(event.self_id))
         assert (bot is not None) and isinstance(bot, CQBot)
-        return await bot.send(NoneBotEvent(**event), str(message), **kwargs)
+        message = message if isinstance(message, Message) else Message(message)
+        return await bot.send(NoneBotEvent(**event), NoneBotMessage(message),
+                              **kwargs)
 
     async def call_action(self, action: str, **kwargs):
         return await self.bot.call_api(action, **kwargs)
