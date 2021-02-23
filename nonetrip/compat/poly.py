@@ -1,6 +1,6 @@
 import asyncio
 from functools import partial
-from typing import Any, Callable, Coroutine, Dict, Optional, TypeVar
+from typing import Any, Callable, Coroutine, Dict, List, Optional, TypeVar
 
 from nonebot import get_app, get_asgi, get_bots, get_driver
 from nonebot.adapters.cqhttp import Bot as CQBot
@@ -9,7 +9,6 @@ from nonebot.adapters.cqhttp.event import MessageEvent
 from nonebot.adapters.cqhttp.message import Message as NoneBotMessage
 from nonebot.exception import ApiNotAvailable
 from nonebot.matcher import Matcher
-from nonebot.typing import T_Handler
 from singledispatchmethod import singledispatchmethod
 
 from nonetrip.typing import Message_T
@@ -18,6 +17,7 @@ from .message import Message, MessageSegment
 
 _AsyncCallable_T = TypeVar("_AsyncCallable_T", bound=Callable[..., Coroutine])
 _HandlerDecorator = Callable[[_AsyncCallable_T], _AsyncCallable_T]
+_NoneBotHandler = Callable[[CQBot, NoneBotEvent], Coroutine]
 
 
 class Event(dict):
@@ -103,15 +103,46 @@ class Event(dict):
 
 class CQHttp:
     message_matcher = Matcher.new("message")
-    notice_handler = Matcher.new("notice")
-    request_handler = Matcher.new("request")
-    metaevent_handler = Matcher.new("meta_event")
+    message_handlers = []
+
+    notice_matcher = Matcher.new("notice")
+    notice_handlers = []
+
+    request_matcher = Matcher.new("request")
+    request_handlers = []
+
+    metaevent_matcher = Matcher.new("meta_event")
+    metaevent_handlers = []
 
     _loop: asyncio.AbstractEventLoop
+
+    @staticmethod
+    async def _run_handlers(handlers: List[_NoneBotHandler], bot: CQBot,
+                            event: NoneBotEvent):
+        asyncio.ensure_future(
+            asyncio.gather(
+                *map(lambda f: f(bot, event), handlers),  # type: ignore
+                return_exceptions=True))
 
     def __init__(self):
         get_driver().on_startup(
             lambda: setattr(self, "_loop", asyncio.get_running_loop()))
+
+        @self.message_matcher.handle()
+        async def handle_message(bot: CQBot, event: NoneBotEvent):
+            return await self._run_handlers(self.message_handlers, bot, event)
+
+        @self.notice_matcher.handle()
+        async def handle_notice(bot: CQBot, event: NoneBotEvent):
+            return await self._run_handlers(self.notice_handlers, bot, event)
+
+        @self.request_matcher.handle()
+        async def handle_request(bot: CQBot, event: NoneBotEvent):
+            return await self._run_handlers(self.request_handlers, bot, event)
+
+        @self.metaevent_matcher.handle()
+        async def handle_metaevent(bot: CQBot, event: NoneBotEvent):
+            return await self._run_handlers(self.metaevent_handlers, bot, event)
 
     @property
     def asgi(self):
@@ -144,7 +175,7 @@ class CQHttp:
         self,
         function: Callable[[Event], Coroutine],
         post_type: Optional[str] = None,
-    ) -> T_Handler:
+    ) -> _NoneBotHandler:
 
         async def handler(bot: CQBot, event: NoneBotEvent):
             if post_type is not None and event.post_type != post_type:
@@ -173,14 +204,14 @@ class CQHttp:
 
     @singledispatchmethod
     def on_notice(self, arg):
-        self.notice_handler.append_handler(self._handler_factory(arg))
+        self.notice_matcher.append_handler(self._handler_factory(arg))
         return arg
 
     @on_notice.register  # type: ignore
     def _on_specified_notice(self, arg: str) -> _HandlerDecorator:
 
         def wrapper(function: _AsyncCallable_T) -> _AsyncCallable_T:
-            self.notice_handler.append_handler(
+            self.notice_matcher.append_handler(
                 self._handler_factory(function, arg))
             return function
 
@@ -188,14 +219,14 @@ class CQHttp:
 
     @singledispatchmethod
     def on_request(self, arg: _AsyncCallable_T) -> _AsyncCallable_T:
-        self.request_handler.append_handler(self._handler_factory(arg))
+        self.request_matcher.append_handler(self._handler_factory(arg))
         return arg
 
     @on_request.register  # type: ignore
     def _on_specified_request(self, arg: str) -> _HandlerDecorator:
 
         def wrapper(function: _AsyncCallable_T) -> _AsyncCallable_T:
-            self.request_handler.append_handler(
+            self.request_matcher.append_handler(
                 self._handler_factory(function, arg))
             return function
 
@@ -203,14 +234,14 @@ class CQHttp:
 
     @singledispatchmethod
     def on_metaevent(self, arg: _AsyncCallable_T) -> _AsyncCallable_T:
-        self.metaevent_handler.append_handler(self._handler_factory(arg))
+        self.metaevent_matcher.append_handler(self._handler_factory(arg))
         return arg
 
     @on_metaevent.register  # type:ignore
     def _on_specified_metaevent(self, arg: str) -> _HandlerDecorator:
 
         def wrapper(function: _AsyncCallable_T) -> _AsyncCallable_T:
-            self.metaevent_handler.append_handler(
+            self.metaevent_matcher.append_handler(
                 self._handler_factory(function, arg))
             return function
 
